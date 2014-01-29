@@ -44,41 +44,48 @@ if ('undefined' != typeof jQuery)
 			// https://developer.mozilla.org/En/Core_JavaScript_1.5_Reference/Operators/Special_Operators/Instanceof_Operator#Description
 			if ('string' == typeof imgs) { imgs = new Array(imgs); }
 
-			var loaded = new Array();
+			var unique = new Object;
+			var loaded = new Object;
+			var loading = 0;
+			var total = 0;
 
 			$.each(imgs,function(i,elem)
 			{
-				var img = new Image();
-
 				var url = elem;
-
-				var img_obj = img;
 
 				if ('string' != typeof elem)
 				{
 					url = $(elem).attr('src') || $(elem).css('background-image').replace(/^url\((?:"|')?(.*)(?:'|")?\)$/mg, "$1");
-
-					img_obj = elem;
 				}
 
-				$(img).bind('load error', function(e)
+				if(!unique[url])
 				{
-					loaded.push(img_obj);
-
-					$.data(img_obj, 'loaded', ('error'==e.type)?false:true);
+					var img = new Image();
+					var img_obj = unique[url] = typeof elem == 'string' ? img : elem;
+					total++;
+					loading++;
 					
-					if (settings.each instanceof Function)
+					$(img).bind('load error', function(e)
 					{
-						settings.each.call(img_obj, loaded.length, imgs.length);
-					}
+						$(this).unbind('load error');
+						if(!loaded[this.src])
+						{
+							loaded[this.src] = true;
+							loading--;
 
-					// http://jsperf.com/length-in-a-variable
-					if (loaded.length>=imgs.length && settings.all instanceof Function) { settings.all.call(loaded); }
+							$.data(img_obj, 'loaded', ('error' == e.type) ? false : true);
 
-					$(this).unbind('load error');
-				});
+							if (settings.each instanceof Function)
+							{
+								settings.each.call(img_obj, loading, total);
+							}
+							
+							if (loading == 0) { settings.all.call(loaded); }
+						}
+					});
 
-				img.src = url;
+					img.src = url;
+				}				
 			});
 		};
 
