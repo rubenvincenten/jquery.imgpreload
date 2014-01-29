@@ -67,7 +67,10 @@ if ('undefined' != typeof jQuery)
 
 					$.data(img_obj, 'loaded', ('error'==e.type)?false:true);
 					
-					if (settings.each instanceof Function) { settings.each.call(img_obj); }
+					if (settings.each instanceof Function)
+					{
+						settings.each.call(img_obj, loaded.length, imgs.length);
+					}
 
 					// http://jsperf.com/length-in-a-variable
 					if (loaded.length>=imgs.length && settings.all instanceof Function) { settings.all.call(loaded); }
