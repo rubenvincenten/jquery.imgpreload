@@ -55,10 +55,15 @@ if ('undefined' != typeof jQuery)
 
 				if ('string' != typeof elem)
 				{
-					url = $(elem).attr('src') || $(elem).css('background-image').replace(/^url\((?:"|')?(.*)(?:'|")?\)$/mg, "$1");
+					var $elem = $(elem);
+					url = $elem.attr('src');
+					if(!url) {
+						url = $elem.css('background').match(/url\((['"]?)(.*)\1\)/i);
+						url = url ? url[2] : false;
+					}
 				}
 
-				if(!unique[url])
+				if(url && url != '' && !unique[url])
 				{
 					var img = new Image();
 					var img_obj = unique[url] = typeof elem == 'string' ? img : elem;
